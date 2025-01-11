@@ -1,1 +1,13 @@
 .aider*
+# Ignore binary files
+*.out
+*.exe
+
+# Ignore object files
+*.o
+
+# Ignore other common build artifacts
+*.a
+*.so
+*.dll
+*.dylib
