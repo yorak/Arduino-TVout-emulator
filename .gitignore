@@ -11,3 +11,6 @@
 *.so
 *.dll
 *.dylib
+
+# Ignore settings.json
+settings.json
