@@ -24,6 +24,12 @@
  OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/* A note on the SLD2 implementation
+ * 
+ * set_vbi_hook and set_hpi_hook are private and not part of TVout
+ * api, and not, therefore, implemented here.
+*/
+
 /* A note about how Color is defined for this version of TVout
  *
  * Where ever choosing a color is mentioned the following are true:
@@ -37,6 +43,7 @@
 
 #include "TVout.h"
 #include "sdl2_video_gen.h"
+#include "spec/video_properties.h"
 
 
 /* Call this to start video output with the default resolution.
@@ -89,7 +96,10 @@ char TVout::begin(uint8_t mode, uint8_t x, uint8_t y) {
 	cursor_x = 0;
 	cursor_y = 0;
 	
-	render_setup(mode,x,y,screen);
+	char render_err = render_setup(mode,x,y,screen);
+	if (render_err!=0)
+		return render_err;
+	
 	clear_screen();
 	return 0;
 } // end of begin
@@ -159,7 +169,7 @@ unsigned char TVout::vres() {
  *	Will return -1 for dynamic width fonts as this cannot be determined.
 */
 char TVout::char_line() {
-	return ((display.hres*8)/pgm_read_byte(font));
+	return ((display.hres*8)/pgm_read_byte((uintptr_t)font));
 } // end of char_line
 
 
@@ -186,8 +196,9 @@ void TVout::delay(unsigned int x) {
 void TVout::delay_frame(unsigned int x) {
 	int stop_line = (int)(display.start_render + (display.vres*(display.vscale_const+1)))+1;
 	while (x) {
-		while (display.scanLine != stop_line);
-		while (display.scanLine == stop_line);
+		// FIXME: have to do something sane here.
+		//while (display.scanLine != stop_line);
+		//while (display.scanLine == stop_line);
 		x--;
 	}
 } // end of delay_frame
@@ -615,11 +626,11 @@ void TVout::bitmap(uint8_t x, uint8_t y, const unsigned char * bmp,
 	rshift = x&7;
 	lshift = 8-rshift;
 	if (width == 0) {
-		width = pgm_read_byte((uint32_t)(bmp) + i);
+		width = pgm_read_byte(bmp + i);
 		i++;
 	}
 	if (lines == 0) {
-		lines = pgm_read_byte((uint32_t)(bmp) + i);
+		lines = pgm_read_byte(bmp + i);
 		i++;
 	}
 		
@@ -641,12 +652,12 @@ void TVout::bitmap(uint8_t x, uint8_t y, const unsigned char * bmp,
 			temp = 0;
 		save = screen[si];
 		screen[si] &= ((0xff << lshift) | temp);
-		temp = pgm_read_byte((uint32_t)(bmp) + i++);
+		temp = pgm_read_byte(bmp + i++);
 		screen[si++] |= temp >> rshift;
 		for ( uint16_t b = i + width-1; i < b; i++) {
 			save = screen[si];
 			screen[si] = temp << lshift;
-			temp = pgm_read_byte((uint32_t)(bmp) + i);
+			temp = pgm_read_byte(bmp + i);
 			screen[si++] |= temp >> rshift;
 		}
 		if (rshift + xtra < 8)
@@ -749,11 +760,14 @@ void TVout::shift(uint8_t distance, uint8_t direction) {
 	}
 } // end of shift
 
+void TVout::println(const char[] /*data*/) {
+	/* TBD */
+}
 
 /* Inline version of set_pixel that does not perform a bounds check
  * This function will be replaced by a macro.
 */
-static void inline sp(uint8_t x, uint8_t y, char c) {
+inline void sp(uint8_t x, uint8_t y, char c) {
 	if (c==1)
 		display.screen[(x/8) + (y*display.hres)] |= 0x80 >> (x&7);
 	else if (c==0)
@@ -762,30 +776,6 @@ static void inline sp(uint8_t x, uint8_t y, char c) {
 		display.screen[(x/8) + (y*display.hres)] ^= 0x80 >> (x&7);
 } // end of sp
 
-
-/* set the vertical blank function call
- * The function passed to this function will be called one per frame. The function should be quickish.
- *
- * Arguments:
- *	func:
- *		The function to call.
- */
-void TVout::set_vbi_hook(void (*func)()) {
-	vbi_hook = func;
-} // end of set_vbi_hook
-
-
-/* set the horizontal blank function call
- * This function passed to this function will be called one per scan line.
- * The function MUST be VERY FAST(~2us max).
- *
- * Arguments:
- *	funct:
- *		The function to call.
- */
-void TVout::set_hbi_hook(void (*func)()) {
-	hbi_hook = func;
-} // end of set_bhi_hook
 
 
 /* Simple tone generation
@@ -799,7 +789,6 @@ void TVout::tone(unsigned int frequency) {
 	tone(frequency, 0);
 } // end of tone
 
-
 /* Simple tone generation
  *
  * Arguments:
@@ -811,7 +800,7 @@ void TVout::tone(unsigned int frequency) {
  */
 void TVout::tone(unsigned int frequency, unsigned long duration_ms) {
 
-	if (frequency == 0)
+	if (frequency == 0 || duration_ms==0)
 		return;
 
 	// TODO: find out how to do this

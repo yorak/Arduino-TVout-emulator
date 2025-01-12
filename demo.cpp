@@ -249,9 +249,11 @@ void printcube() {
   draw_cube();
 }
 
-
-
 void setup() {
+  TV.begin(PAL,120,96);
+}
+
+void setup2() {
   TV.begin(PAL,120,96);
   //TV.select_font(font6x8);
   intro();

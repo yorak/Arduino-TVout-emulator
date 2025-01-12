@@ -104,6 +104,10 @@ public:
     //placeholders for printing 
     void println(const char[]);
 
+	// tone functions
+    void tone(unsigned int frequency, unsigned long durationMS);
+    void tone(unsigned int frequency);
+    void noTone();
 
 private:
 	uint8_t cursor_x,cursor_y;
@@ -114,5 +118,5 @@ private:
     void printFloat(double, uint8_t);
 };
 
-static void inline sp(unsigned char x, unsigned char y, char c); 
+inline void sp(unsigned char x, unsigned char y, char c); 
 #endif //SDL_TVOUT_H

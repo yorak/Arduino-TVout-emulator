@@ -1,5 +1,5 @@
-#ifndef ARDUINO_IO_EMULATION_H
-#define ARDUINO_IO_EMULATION_H
+#ifndef ARDUINO_EMULATION_H
+#define ARDUINO_EMULATION_H
 
 #include <stdint.h>
 #include <cstdlib> // For std::rand
@@ -42,7 +42,7 @@
 #define analogPinToChannel(pin) (pin)
 
 // Emulate PROGMEM
-#define pgm_read_byte(x) (*(x))
+#define pgm_read_byte(x) (*(const uint8_t*)(x))
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,4 +66,7 @@ void randomSeed(unsigned int seed);
 long arduinoRandom(long min, long max);
 long arduinoRandom(long max);
 
-#endif // ARDUINO_IO_EMULATION_H
+void setup();
+void loop();
+
+#endif // ARDUINO_GENERATED_H

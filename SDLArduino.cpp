@@ -1,4 +1,4 @@
-#include "SDLArduino.h"
+
 #include <SDL2/SDL.h>
 #include <unordered_map>
 
@@ -21,11 +21,6 @@ static const SDL_Scancode analogKeys[] = {
     SDL_SCANCODE_T, SDL_SCANCODE_Y, SDL_SCANCODE_U, SDL_SCANCODE_I,
     SDL_SCANCODE_O, SDL_SCANCODE_P
 };
-
-// No separate PGM on PC
-unsigned char pgm_read_byte(const unsigned char* data)  {
-    return *data;
-}
 
 // Gamepad mappings
 #define LEFT_PIN 2
@@ -82,11 +77,11 @@ void processSDLEvents() {
     }
 }
 
-void pinMode(uint8_t pin, uint8_t mode) {
+void pinMode(uint8_t /*pin*/, uint8_t /*mode*/) {
     // No specific action required for SDL input emulation
 }
 
-void digitalWrite(uint8_t pin, uint8_t value) {
+void digitalWrite(uint8_t /*pin*/, uint8_t /*value*/) {
     // SDL handles only input; output is not simulated
 }
 
@@ -100,7 +95,7 @@ int analogRead(uint8_t pin) {
     return analogPinState[pin];
 }
 
-void analogWrite(uint8_t pin, int value) {
+void analogWrite(uint8_t /*pin*/, int /*value*/) {
     // SDL handles only input; output is not simulated
 }
 

@@ -46,8 +46,9 @@ extern TVout_vid display;
 extern void (*hbi_hook)();
 extern void (*vbi_hook)();
 
-void render_setup(uint8_t mode, uint8_t x, uint8_t y, uint8_t *scrnptr);
+char render_setup(uint8_t mode, uint8_t x, uint8_t y, uint8_t *scrnptr);
 void render_end(); // Custom for SDL2
+char update(); // Custom for SDL2
 
 void blank_line();
 void active_line();
@@ -62,7 +63,7 @@ void render_line6c();
 void render_line5c();
 void render_line4c();
 void render_line3c();
-static void inline wait_until(uint8_t time);
+inline void wait_until(uint8_t time);
 
 #endif // SDL2_VIDEO_GEN
 
