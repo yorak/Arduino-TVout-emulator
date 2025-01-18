@@ -14,4 +14,8 @@
 
 # Ignore settings.json
 settings.json
+
+# outputs
+bin/
 tvout_simulator_debug
+tvout_simulator

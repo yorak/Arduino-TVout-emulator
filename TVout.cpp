@@ -39,8 +39,6 @@
  *	All others will be ignored.
 */
 
-#include <cstdlib>   // For malloc and free
-
 #include "TVout.h"
 #include "sdl2_video_gen.h"
 #include "spec/video_properties.h"
@@ -97,6 +95,7 @@ char TVout::begin(uint8_t mode, uint8_t x, uint8_t y) {
 	cursor_y = 0;
 	
 	char render_err = render_setup(mode,x,y,screen);
+	printf("render steup done");
 	if (render_err!=0)
 		return render_err;
 	
@@ -194,11 +193,13 @@ void TVout::delay(unsigned int x) {
  *		The number of frames to delay for.
  */
 void TVout::delay_frame(unsigned int x) {
-	int stop_line = (int)(display.start_render + (display.vres*(display.vscale_const+1)))+1;
+	//int stop_line = (int)(display.start_render + (display.vres*(display.vscale_const+1)))+1;
 	while (x) {
 		// FIXME: have to do something sane here.
+		// TODO: if we ever change to line based simulation, make this accurate
 		//while (display.scanLine != stop_line);
 		//while (display.scanLine == stop_line);
+		wait_simulated_vblank();
 		x--;
 	}
 } // end of delay_frame

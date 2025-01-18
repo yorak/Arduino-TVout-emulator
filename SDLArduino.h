@@ -1,9 +1,16 @@
-#ifndef ARDUINO_IO_EMULATION_H
-#define ARDUINO_IO_EMULATION_H
+#ifndef ARDUINO_EMULATION_H
+#define ARDUINO_EMULATION_H
 
 #include <stdint.h>
 #include <cstdlib> // For std::rand
 #include <cmath> 
+
+// SDL2 specific includes
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mutex.h>
+
+// TODO: Remove me
+#include <cstdio>
 #undef random
 
 // Typical macros and constants
@@ -42,7 +49,8 @@
 #define analogPinToChannel(pin) (pin)
 
 // Emulate PROGMEM
-#define pgm_read_byte(x) (*(x))
+//#define pgm_read_byte(x) (*(x))
+#define pgm_read_byte(x) (*(const uint8_t*)(x))
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,10 +62,13 @@ void digitalWrite(uint8_t pin, uint8_t value);
 int digitalRead(uint8_t pin);
 int analogRead(uint8_t pin);
 void analogWrite(uint8_t pin, int value);
-
+void delay(unsigned long ms);
 #ifdef __cplusplus
 }
 #endif
+
+// This is what makes the 
+void processSDLInputEvent(SDL_Event& event);
 
 
 
@@ -66,4 +77,7 @@ void randomSeed(unsigned int seed);
 long arduinoRandom(long min, long max);
 long arduinoRandom(long max);
 
-#endif // ARDUINO_IO_EMULATION_H
+void setup();
+void loop();
+
+#endif // ARDUINO_EMULATION_H

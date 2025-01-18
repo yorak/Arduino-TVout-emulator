@@ -31,39 +31,32 @@ typedef struct {
 	volatile int scanLine;
 	volatile unsigned long frames;
 	unsigned char start_render;
-	int lines_frame;	  	//remove me
+	int lines_frame;	  	
 	uint8_t vres;
 	uint8_t hres;
-	uint8_t output_delay; 	//remove me
-	char vscale_const;		//combine me with status switch
-	char vscale;			//combine me too.
-	char vsync_end;			//remove me
+	uint8_t output_delay; 	
+	char vscale_const;		
+	char vscale;			
+	char vsync_end;			
 	uint8_t * screen;
 } TVout_vid;
 
-extern TVout_vid display;
+extern volatile TVout_vid display;
 
 extern void (*hbi_hook)();
 extern void (*vbi_hook)();
 
 char render_setup(uint8_t mode, uint8_t x, uint8_t y, uint8_t *scrnptr);
-void render_end(); // Custom for SDL2
-char update(); // Custom for SDL2
 
-void blank_line();
-void active_line();
-void vsync_line();
-void empty();
+// Custom for SDL2
+void render_end();
+char update();
+void wait_simulated_vblank(); 
 
 //tone generation properties
 extern volatile long remainingToneVsyncs;
 
-// 6cycles functions
-void render_line6c();
-void render_line5c();
-void render_line4c();
-void render_line3c();
-inline void wait_until(uint8_t time);
+
 
 #endif // SDL2_VIDEO_GEN
 

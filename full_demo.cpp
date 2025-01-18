@@ -1,7 +1,6 @@
 #include "TVout.h"
 //#include <fontALL.h>
 
-
 PROGMEM const unsigned char schematic[] = {
 120,96,
 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
@@ -250,12 +249,15 @@ void printcube() {
 }
 
 void setup() {
+  printf("Call TV.begin");
   TV.begin(PAL,120,96);
-}
-
-void setup2() {
-  TV.begin(PAL,120,96);
+  printf("TV.begin ret");
   //TV.select_font(font6x8);
+
+  // TODO: Remove this debug
+    TV.draw_circle(10,10, 3, WHITE);
+    printf("There is a circle there");
+    
   intro();
   TV.println("I am the TVout\nlibrary running on a freeduino\n");
   TV.delay(2500);
