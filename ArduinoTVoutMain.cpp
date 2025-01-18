@@ -16,13 +16,11 @@ int main() {
     while (running) {
         if (update() != 0) {
             running = false;
-            break;
         }
         SDL_Delay(1);  // Prevent tight loop
     }
 
     // Clean shutdown
-    running = false;
     if (arduino_thread.joinable()) {
         arduino_thread.join();
     }
