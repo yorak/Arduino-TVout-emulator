@@ -173,13 +173,13 @@ unsigned char w,l,wb;
   for ( unsigned char i = 1; i < l; i++ ) {
     TV.bitmap((TV.hres() - w)/2,0,TVOlogo,index,w,i);
     index-= wb;
-    TV.delay(50);
+    TV.delay(20);
   }
   for (unsigned char i = 0; i < (TV.vres() - l)/2; i++) {
     TV.bitmap((TV.hres() - w)/2,i,TVOlogo);
-    TV.delay(50);
+    TV.delay(20);
   }
-  TV.delay(3000);
+  TV.delay(1500);
   TV.clear_screen();
 }
 
@@ -249,27 +249,21 @@ void printcube() {
 }
 
 void setup() {
-  printf("Call TV.begin");
   TV.begin(PAL,120,96);
-  printf("TV.begin ret");
   //TV.select_font(font6x8);
-
-  // TODO: Remove this debug
-    TV.draw_circle(10,10, 3, WHITE);
-    printf("There is a circle there");
     
   intro();
-  TV.println("I am the TVout\nlibrary running on a freeduino\n");
-  TV.delay(2500);
-  TV.println("I generate a PAL\nor NTSC composite  video using\ninterrupts\n");
-  TV.delay(2500);
-  TV.println("My schematic:");
-  TV.delay(1500);
+  TV.println("I am the TVout\nlibrary running on a PC \n");
+  TV.delay(1200);
+  TV.println("I generate a PAL\nor NTSC video to SLD2 using\ntimers\n");
+  TV.delay(1200);
+  TV.println("My emulated schematic:");
+  TV.delay(1200);
   TV.bitmap(0,0,schematic);
-  TV.delay(10000);
+  TV.delay(5000);
   TV.clear_screen();
   TV.println("Lets see what\nwhat I can do");
-  TV.delay(2000);
+  TV.delay(1000);
   
   /*fonts
   TV.clear_screen();
@@ -281,18 +275,18 @@ void setup() {
   TV.select_font(font8x8);
   TV.println("8x8 font FONT");
   TV.select_font(font6x8);
-  TV.delay(2000);*/
+  TV.delay(1000);*/
   
   TV.clear_screen();
   TV.println("Draw Basic Shapes");
-  TV.delay(2000);
+  TV.delay(1000);
   
   //circles
   TV.clear_screen();
   TV.draw_circle(TV.hres()/2,TV.vres()/2,TV.vres()/3,WHITE);
-  TV.delay(500);
+  TV.delay(250);
   TV.draw_circle(TV.hres()/2,TV.vres()/2,TV.vres()/2,WHITE,INVERT);
-  TV.delay(2000);
+  TV.delay(1000);
   
   //rectangles and lines
   TV.clear_screen();
@@ -305,13 +299,13 @@ void setup() {
   TV.delay(500);
   TV.draw_line(10,10,110,86,INVERT);
   TV.draw_line(10,86,110,10,INVERT);
-  TV.delay(2000);
+  TV.delay(1000);
   
   //random cube forever.
   TV.clear_screen();
   /*TV.print(16,40,"Random Cube");
   TV.print(28,48,"Rotation");
-  TV.delay(2000);*/
+  TV.delay(1000);*/
   
   randomSeed(analogRead(0));
 }

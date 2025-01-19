@@ -13,11 +13,11 @@ DEBUG_FLAGS = $(COMMON_FLAGS) -g -O0 -DDEBUG
 LDFLAGS = `sdl2-config --libs` -lpthread
 
 # Target executable
-TARGET = $(BIN_DIR)/tvout_simulator
+TARGET = $(BIN_DIR)/tvout_simulator_demo
 DEBUG_TARGET = $(BIN_DIR)/$(notdir $(TARGET))_debug
 
 # Arduino-style app file
-ARDUINO_APP = min_demo
+ARDUINO_APP = demo
 COMMON_FLAGS += -include SDLArduino.h
 
 # Source files
