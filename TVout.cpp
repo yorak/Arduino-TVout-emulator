@@ -43,6 +43,8 @@
 #include "sdl2_video_gen.h"
 #include "spec/video_properties.h"
 
+// There is ever only one screen.
+uint8_t* TVout::screen = nullptr;
 
 /* Call this to start video output with the default resolution.
  * 
@@ -86,9 +88,10 @@ char TVout::begin(uint8_t mode, uint8_t x, uint8_t y) {
 	if ( !(x & 0xF8))
 		return 1;
 	x = x/8;
-		
+	
+	if (screen != nullptr) end();
 	screen = (unsigned char*)malloc(x * y * sizeof(unsigned char));
-	if (screen == NULL)
+	if (screen == nullptr)
 		return 4;
 		
 	cursor_x = 0;
@@ -108,7 +111,7 @@ char TVout::begin(uint8_t mode, uint8_t x, uint8_t y) {
  */
  void TVout::end() {
 	render_end();
-	free(screen);
+	if (screen != nullptr) free(screen);
 }
 
 

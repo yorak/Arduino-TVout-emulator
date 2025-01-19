@@ -67,8 +67,10 @@ typedef uint8_t byte;
 TVout.cpp contains a brief expenation of each function.
 */
 class TVout {
+
 public:
-	uint8_t * screen;
+	// There is only one screen
+	static uint8_t * screen;
 	
 	char begin(uint8_t mode);
 	char begin(uint8_t mode, uint8_t x, uint8_t y);

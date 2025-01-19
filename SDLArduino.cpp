@@ -8,7 +8,6 @@
 #include <time.h>
 #endif
 
-
 // SDL2 and Input Handling
 static std::unordered_map<uint8_t, uint8_t> digitalPinState;
 static std::unordered_map<uint8_t, int> analogPinState;

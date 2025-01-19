@@ -1,7 +1,9 @@
 // We need this to call update.
-#include "sdl2_video_gen.h"
 #include <cstdio>
 #include <thread>
+
+#include "sdl2_video_gen.h"
+#include "TVout.h"
 
 int main() {
     bool running = true;
@@ -21,6 +23,8 @@ int main() {
     }
 
     // Clean shutdown
+    TVout justInCaseOneWasCreated; 
+    justInCaseOneWasCreated.end();
     if (arduino_thread.joinable()) {
         arduino_thread.join();
     }
