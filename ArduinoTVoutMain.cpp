@@ -16,6 +16,7 @@ int main() {
     while (running) {
         if (update() != 0) {
             running = false;
+            render_end();
             break;
         }
         SDL_Delay(1);  // Prevent tight loop
@@ -26,6 +27,6 @@ int main() {
     if (arduino_thread.joinable()) {
         arduino_thread.join();
     }
-    render_end();
+    
     return 0;
 }
