@@ -95,7 +95,6 @@ char TVout::begin(uint8_t mode, uint8_t x, uint8_t y) {
 	cursor_y = 0;
 	
 	char render_err = render_setup(mode,x,y,screen);
-	printf("render steup done");
 	if (render_err!=0)
 		return render_err;
 	
@@ -124,17 +123,17 @@ void TVout::fill(uint8_t color) {
 		case BLACK:
 			cursor_x = 0;
 			cursor_y = 0;
-			for (int i = 0; i < (display.hres)*display.vres; i++)
+			for (int i = 0; i < (display.hres_bytes)*display.vres; i++)
 				display.screen[i] = 0;
 			break;
 		case WHITE:
 			cursor_x = 0;
 			cursor_y = 0;
-			for (int i = 0; i < (display.hres)*display.vres; i++)
+			for (int i = 0; i < (display.hres_bytes)*display.vres; i++)
 				display.screen[i] = 0xFF;
 			break;
 		case INVERT:
-			for (int i = 0; i < display.hres*display.vres; i++)
+			for (int i = 0; i < display.hres_bytes*display.vres; i++)
 				display.screen[i] = ~display.screen[i];
 			break;
 	}
@@ -147,7 +146,7 @@ void TVout::fill(uint8_t color) {
  *	The horizontal resolution.
 */
 unsigned char TVout::hres() {
-	return display.hres*8;
+	return display.hres_bytes*8;
 } // end of hres
 
 
@@ -168,7 +167,7 @@ unsigned char TVout::vres() {
  *	Will return -1 for dynamic width fonts as this cannot be determined.
 */
 char TVout::char_line() {
-	return ((display.hres*8)/pgm_read_byte((uintptr_t)font));
+	return ((hres())/pgm_read_byte((uintptr_t)font));
 } // end of char_line
 
 
@@ -181,7 +180,7 @@ char TVout::char_line() {
 */
 void TVout::delay(unsigned int x) {
 	unsigned long time = millis() + x;
-	while(millis() < time);
+	while(is_render_active() && millis() < time);
 } // end of delay
 
 
@@ -270,7 +269,7 @@ void TVout::force_linestart(uint8_t line) {
  *		(see color note at the top of this file)
  */
 void TVout::set_pixel(uint8_t x, uint8_t y, char c) {
-	if (x >= display.hres*8 || y >= display.vres)
+	if (x >= display.hres_bytes*8 || y >= display.vres)
 		return;
 	sp(x,y,c);
 } // end of set_pixel
@@ -291,9 +290,9 @@ void TVout::set_pixel(uint8_t x, uint8_t y, char c) {
  * Thank you gijs on the arduino.cc forum for the non obviouse fix.
 */
 unsigned char TVout::get_pixel(uint8_t x, uint8_t y) {
-	if (x >= display.hres*8 || y >= display.vres)
+	if (x >= display.hres_bytes*8 || y >= display.vres)
 		return 0;
-	if (display.screen[x/8+y*display.hres] & (0x80 >>(x&7)))
+	if (display.screen[x/8+y*display.hres_bytes] & (0x80 >>(x&7)))
 		return 1;
 	return 0;
 } // end of get_pixel
@@ -317,7 +316,7 @@ unsigned char TVout::get_pixel(uint8_t x, uint8_t y) {
 /* Patched to allow support for the Arduino Leonardo */
 void TVout::draw_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, char c) {
 
-	if (x0 > display.hres*8 || y0 > display.vres || x1 > display.hres*8 || y1 > display.vres)
+	if (x0 > display.hres_bytes*8 || y0 > display.vres || x1 > display.hres_bytes*8 || y1 > display.vres)
 		return;
 	if (x0 == x1)
 		draw_column(x0,y0,y1,c);
@@ -413,9 +412,9 @@ void TVout::draw_row(uint8_t line, uint16_t x0, uint16_t x1, uint8_t c) {
 			x1 = lbit;
 		}
 		lbit = 0xff >> (x0&7);
-		x0 = x0/8 + display.hres*line;
+		x0 = x0/8 + display.hres_bytes*line;
 		rbit = ~(0xff >> (x1&7));
-		x1 = x1/8 + display.hres*line;
+		x1 = x1/8 + display.hres_bytes*line;
 		if (x0 == x1) {
 			lbit = lbit & rbit;
 			rbit = 0;
@@ -469,25 +468,25 @@ void TVout::draw_column(uint8_t row, uint16_t y0, uint16_t y1, uint8_t c) {
 			y1 = bit;
 		}
 		bit = 0x80 >> (row&7);
-		byte = row/8 + y0*display.hres;
+		byte = row/8 + y0*display.hres_bytes;
 		if (c == WHITE) {
 			while ( y0 <= y1) {
 				screen[byte] |= bit;
-				byte += display.hres;
+				byte += display.hres_bytes;
 				y0++;
 			}
 		}
 		else if (c == BLACK) {
 			while ( y0 <= y1) {
 				screen[byte] &= ~bit;
-				byte += display.hres;
+				byte += display.hres_bytes;
 				y0++;
 			}
 		}
 		else if (c == INVERT) {
 			while ( y0 <= y1) {
 				screen[byte] ^= bit;
-				byte += display.hres;
+				byte += display.hres_bytes;
 				y0++;
 			}
 		}
@@ -646,7 +645,7 @@ void TVout::bitmap(uint8_t x, uint8_t y, const unsigned char * bmp,
 	}
 	
 	for (uint8_t l = 0; l < lines; l++) {
-		si = (y + l)*display.hres + x/8;
+		si = (y + l)*display.hres_bytes + x/8;
 		if (width == 1)
 			temp = 0xff >> rshift + xtra;
 		else
@@ -692,8 +691,8 @@ void TVout::shift(uint8_t distance, uint8_t direction) {
 	switch(direction) {
 		case UP:
 			dst = display.screen;
-			src = display.screen + distance*display.hres;
-			end = display.screen + display.vres*display.hres;
+			src = display.screen + distance*display.hres_bytes;
+			end = display.screen + display.vres*display.hres_bytes;
 				
 			while (src < end) {
 				*dst = *src;
@@ -703,8 +702,8 @@ void TVout::shift(uint8_t distance, uint8_t direction) {
 			}
 			break;
 		case DOWN:
-			dst = display.screen + display.vres*display.hres - 1;
-			src = dst - distance*display.hres;
+			dst = display.screen + display.vres*display.hres_bytes - 1;
+			src = dst - distance*display.hres_bytes;
 			end = display.screen;
 				
 			while (src >= end) {
@@ -718,9 +717,9 @@ void TVout::shift(uint8_t distance, uint8_t direction) {
 			shift = distance & 7;
 			
 			for (uint8_t line = 0; line < display.vres; line++) {
-				dst = display.screen + display.hres*line;
+				dst = display.screen + display.hres_bytes*line;
 				src = dst + distance/8;
-				end = dst + display.hres-2;
+				end = dst + display.hres_bytes-2;
 				while (src <= end) {
 					tmp = 0;
 					tmp = *src << shift;
@@ -740,9 +739,9 @@ void TVout::shift(uint8_t distance, uint8_t direction) {
 			shift = distance & 7;
 			
 			for (uint8_t line = 0; line < display.vres; line++) {
-				dst = display.screen + display.hres-1 + display.hres*line;
+				dst = display.screen + display.hres_bytes-1 + display.hres_bytes*line;
 				src = dst - distance/8;
-				end = dst - display.hres+2;
+				end = dst - display.hres_bytes+2;
 				while (src >= end) {
 					tmp = 0;
 					tmp = *src >> shift;
@@ -770,11 +769,11 @@ void TVout::println(const char[] /*data*/) {
 */
 inline void sp(uint8_t x, uint8_t y, char c) {
 	if (c==1)
-		display.screen[(x/8) + (y*display.hres)] |= 0x80 >> (x&7);
+		display.screen[(x/8) + (y*display.hres_bytes)] |= 0x80 >> (x&7);
 	else if (c==0)
-		display.screen[(x/8) + (y*display.hres)] &= ~0x80 >> (x&7);
+		display.screen[(x/8) + (y*display.hres_bytes)] &= ~0x80 >> (x&7);
 	else
-		display.screen[(x/8) + (y*display.hres)] ^= 0x80 >> (x&7);
+		display.screen[(x/8) + (y*display.hres_bytes)] ^= 0x80 >> (x&7);
 } // end of sp
 
 

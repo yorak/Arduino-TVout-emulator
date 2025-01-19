@@ -8,12 +8,18 @@
 #include <time.h>
 #endif
 
+// The delay is made abortable with isSDLwindowClosed to allow clean shutdown.
+//  The state of isSDLwindowClosed is cheked every DELAY_CHUNK_SIZE ms. You can
+//  adjust this to be bigger if delay is too inaccurate or takes too much CPU
+//  (it should not).
+#define DELAY_CHUNK_SIZE 5UL
 
 // SDL2 and Input Handling
 static std::unordered_map<uint8_t, uint8_t> digitalPinState;
 static std::unordered_map<uint8_t, int> analogPinState;
 static SDL_GameController *gameController = nullptr;
 static bool gamepadInitialized = false;
+static bool isSDLwindowClosed = false;
 
 // Keyboard mappings
 static const SDL_Scancode digitalKeys[] = {
@@ -80,6 +86,10 @@ void processSDLInputEvent(SDL_Event& event) {
     }
 }
 
+void signalSDLwindowClosed() {
+    isSDLwindowClosed = true;
+}
+
 void pinMode(uint8_t /*pin*/, uint8_t /*mode*/) {
     // No specific action required for SDL input emulation
 }
@@ -114,13 +124,21 @@ long arduinoRandom(long max) {
 }
 
 void delay(unsigned long ms) {
+    unsigned long remaining = ms;
+    
+    while (remaining > 0 && !isSDLwindowClosed) {
+        unsigned long current_delay = std::min(remaining, DELAY_CHUNK_SIZE);
+        
 #ifdef _WIN32
-    Sleep(ms);  // Sleep for `ms` milliseconds on Windows
+        Sleep(current_delay);
 #else
-    struct timespec ts;
-    ts.tv_sec = ms / 1000;              // Convert milliseconds to seconds
-    ts.tv_nsec = (ms % 1000) * 1000000; // Convert remainder to nanoseconds
-    nanosleep(&ts, NULL);               // Sleep for the specified time
+        struct timespec ts;
+        ts.tv_sec = current_delay / 1000;
+        ts.tv_nsec = (current_delay % 1000) * 1000000;
+        nanosleep(&ts, NULL);
 #endif
+        
+        remaining -= current_delay;
+    }
 }
 

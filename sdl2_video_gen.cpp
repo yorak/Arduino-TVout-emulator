@@ -53,27 +53,27 @@ SDL_cond* frame_condition;
 // sound properties
 volatile long remainingToneVsyncs;
 
-static void update_texture(SDL_Texture* texture, unsigned char* screen, int width, int height) {
+static void update_texture(SDL_Texture* texture, unsigned char* screen, int width_pix, int height_pix) {
     // Create a buffer for the 32-bit pixels
-    uint32_t* pixels = (uint32_t*)malloc(width * height * sizeof(uint32_t));
+    uint32_t* pixels = (uint32_t*)malloc(width_pix * height_pix * sizeof(uint32_t));
     if (!pixels) {
         SDL_Log("Failed to allocate pixel buffer");
         return;
     }
 
     // Convert 1-bit pixels to 32-bit ARGB
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
+    for (int y = 0; y < height_pix; y++) {
+        for (int x = 0; x < width_pix; x++) {
             // Calculate byte index and bit position
-            int byte_index = (y * width + x) / 8;
-            int bit_pos = 7 - ((y * width + x) % 8); // MSB first
+            int byte_index = (y * width_pix + x) / 8;
+            int bit_pos = 7 - ((y * width_pix + x) % 8); // MSB first
             
             // Extract the bit value
             int bit = (screen[byte_index] >> bit_pos) & 1;
             
             // Convert to white (0xFFFFFFFF) or black (0xFF000000)
             // Format: 0xAARRGGBB
-            pixels[y * width + x] = bit ? 0xFFFFFFFF : 0xFF000000;
+            pixels[y * width_pix + x] = bit ? 0xFFFFFFFF : 0xFF000000;
         }
     }
 
@@ -87,7 +87,7 @@ static void update_texture(SDL_Texture* texture, unsigned char* screen, int widt
     }
 
     // Copy our pixel buffer to the texture
-    memcpy(texture_pixels, pixels, width * height * sizeof(uint32_t));
+    memcpy(texture_pixels, pixels, width_pix * height_pix * sizeof(uint32_t));
     
     // Clean up
     SDL_UnlockTexture(texture);
@@ -105,7 +105,7 @@ Uint32 frame_timer_callback(Uint32 interval, void* /*param*/) {
     SDL_LockMutex(frame_mutex);
 
     // Update texture and render exactly on the timer interval
-    update_texture(texture, display.screen, display.hres, display.vres);
+    update_texture(texture, display.screen, display.hres_bytes*8, display.vres);
     SDL_RenderCopy(renderer, texture, NULL, NULL);
     SDL_RenderPresent(renderer);
     display.frames++;
@@ -118,7 +118,7 @@ Uint32 frame_timer_callback(Uint32 interval, void* /*param*/) {
 
 char render_setup(uint8_t mode, uint8_t x, uint8_t y, uint8_t *scrnptr) {
     display.screen = scrnptr;
-    display.hres = x;
+    display.hres_bytes = x;
     display.vres = y;
     display.frames = 0;
     render_video_mode = mode;
@@ -173,7 +173,7 @@ char render_setup(uint8_t mode, uint8_t x, uint8_t y, uint8_t *scrnptr) {
     }
     
     // Create texture for pixel manipulation
-    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, x, y);
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, x*8, y);
     if (!texture) {
         fprintf(stderr, "Could not create texture! SDL_Error: %s\n", SDL_GetError());
         SDL_DestroyRenderer(renderer);
@@ -215,6 +215,11 @@ void render_end() {
     SDL_Quit();
 }
 
+bool is_render_active()
+{
+    return SDL_AtomicGet(&sdl_render_is_active)!=0;
+}
+
 char update() {
     if (!SDL_AtomicGet(&sdl_render_is_active)) {
         return 0; // Have to wait for the renderer to come online.
@@ -251,6 +256,10 @@ char update() {
 }
 
 void wait_simulated_vblank() {
+    if (!SDL_AtomicGet(&sdl_render_is_active)) {
+        return; // Have to wait for the renderer to come online.
+    }
+
     SDL_LockMutex(frame_mutex);
     SDL_CondWait(frame_condition, frame_mutex);  // Waits for the signal
     SDL_UnlockMutex(frame_mutex);

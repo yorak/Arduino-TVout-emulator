@@ -33,7 +33,7 @@ typedef struct {
 	unsigned char start_render;
 	int lines_frame;	  	
 	uint8_t vres;
-	uint8_t hres;
+	uint8_t hres_bytes;
 	uint8_t output_delay; 	
 	char vscale_const;		
 	char vscale;			
@@ -50,6 +50,7 @@ char render_setup(uint8_t mode, uint8_t x, uint8_t y, uint8_t *scrnptr);
 
 // Custom for SDL2
 void render_end();
+bool is_render_active();
 char update();
 void wait_simulated_vblank(); 
 

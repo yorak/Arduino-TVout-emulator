@@ -43,7 +43,15 @@
 #define NUM_ANALOG_INPUTS 6 // Example for a generic platform
 #endif
 
-// Pin mapping (override as needed)
+
+// This is what makes the GPIO change state when 
+//  keyboard buttons are pressed,
+//  controller is twiddled, etc. 
+void processSDLInputEvent(SDL_Event& event);
+// This is used to signal shutdown. Delay is no longer waited.
+void signalSDLwindowClosed();
+
+// Pin mapping (really make no sense here, but this makes it compile if somebody use these)
 #define digitalPinToPort(pin)    (pin / 8) // Example mapping
 #define digitalPinToBitMask(pin) (1 << (pin % 8))
 #define analogPinToChannel(pin) (pin)
@@ -66,11 +74,6 @@ void delay(unsigned long ms);
 #ifdef __cplusplus
 }
 #endif
-
-// This is what makes the 
-void processSDLInputEvent(SDL_Event& event);
-
-
 
 // Arduino kind of random
 void randomSeed(unsigned int seed);
