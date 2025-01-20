@@ -1,5 +1,7 @@
 # Arduino TVout Simulator
 
+![TVout Screen Window with a spinning cube](docs/tvout_screen_window_cube.gif)
+
 This project allows you to experiment and compile your Arduino TVout game or other experiments on a PC using SDL2. It is not perfectly emulate Atmega, but provides a framework and API to simulate Arduino's TVout library, enabling development and testing without the need for physical hardware. The inputs are simulate through mouse, game controllers and/or keyboard.
 
 ## Table of Contents
