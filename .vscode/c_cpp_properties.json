@@ -11,7 +11,7 @@
             "cppStandard": "gnu++14",
             "intelliSenseMode": "linux-gcc-x64",
             "forcedInclude": [
-                "${workspaceFolder}/ArduinoEmulation.h"
+                "${workspaceFolder}/SDLArduino.h"
             ],
             "compilerArgs": [
                 "-Wall",

@@ -1,5 +1,5 @@
-#ifndef ARDUINO_EMULATION_H
-#define ARDUINO_EMULATION_H
+#ifndef ARDUINO_SIMULATION_H
+#define ARDUINO_SIMULATION_H
 
 #include <stdint.h>
 #include <cstdlib> // For std::rand
@@ -56,7 +56,7 @@ void signalSDLwindowClosed();
 #define digitalPinToBitMask(pin) (1 << (pin % 8))
 #define analogPinToChannel(pin) (pin)
 
-// Emulate PROGMEM
+// No PROGMEM on PC, just read if from regular mem
 //#define pgm_read_byte(x) (*(x))
 #define pgm_read_byte(x) (*(const uint8_t*)(x))
 
@@ -83,4 +83,4 @@ long arduinoRandom(long max);
 void setup();
 void loop();
 
-#endif // ARDUINO_EMULATION_H
+#endif // ARDUINO_SIMULATION_H

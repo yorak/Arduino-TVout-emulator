@@ -257,7 +257,7 @@ void setup() {
   TV.delay(1200);
   TV.println("I generate a PAL\nor NTSC video to SLD2 using\ntimers\n");
   TV.delay(1200);
-  TV.println("My emulated schematic:");
+  TV.println("My simulated schematic:");
   TV.delay(1200);
   TV.bitmap(0,0,schematic);
   TV.delay(5000);

@@ -91,7 +91,7 @@ void signalSDLwindowClosed() {
 }
 
 void pinMode(uint8_t /*pin*/, uint8_t /*mode*/) {
-    // No specific action required for SDL input emulation
+    // No specific action required for SDL input simulation
 }
 
 void digitalWrite(uint8_t /*pin*/, uint8_t /*value*/) {

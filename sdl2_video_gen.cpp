@@ -185,7 +185,7 @@ char render_setup(uint8_t mode, uint8_t x, uint8_t y, uint8_t *scrnptr) {
     // Explicitly disable vsync
     SDL_GL_SetSwapInterval(0);
 
-    // Make sure the SDL window update and the android emulation threads do
+    // These make sure the SDL window update and the Arduino simulation threads do
     //  not trash the shared data.
     frame_mutex = SDL_CreateMutex();
     frame_condition = SDL_CreateCond();
