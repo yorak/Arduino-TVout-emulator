@@ -42,6 +42,8 @@
 #include "TVout.h"
 #include "sdl2_video_gen.h"
 #include "spec/video_properties.h"
+#include <cmath>
+
 
 
 /* Call this to start video output with the default resolution.
@@ -776,18 +778,34 @@ inline void sp(uint8_t x, uint8_t y, char c) {
 		display.screen[(x/8) + (y*display.hres_bytes)] ^= 0x80 >> (x&7);
 } // end of sp
 
-
+// Some variables needed to keep track of the audio state
+static SDL_AudioDeviceID audio_device = 0;
+static int audio_frequency = 0;
+static int audio_duration = 0;
+static Uint32 audio_start_time = 0;
 
 /* Simple tone generation
  *
  * Arguments:
  *	frequency:
  *		the frequency of the tone
- * courtesy of adamwwolf
  */
 void TVout::tone(unsigned int frequency) {
 	tone(frequency, 0);
 } // end of tone
+
+
+void audio_callback(void* userdata, Uint8* stream, int len) {
+    int samples = len / 2; // 2 bytes per sample (16-bit audio)
+    int16_t* buffer = (int16_t*)stream;
+    static int phase = 0;
+    int amplitude = 28000; // Amplitude of the square wave
+
+    for (int i = 0; i < samples; ++i) {
+        buffer[i] = (phase < audio_frequency / 2) ? amplitude : -amplitude;
+        phase = (phase + 1) % audio_frequency;
+    }
+}
 
 /* Simple tone generation
  *
@@ -796,18 +814,40 @@ void TVout::tone(unsigned int frequency) {
  *		the frequency of the tone
  *	duration_ms:
  *		The duration to play the tone in ms
- * courtesy of adamwwolf
  */
 void TVout::tone(unsigned int frequency, unsigned long duration_ms) {
+    if (frequency == 0 || duration_ms == 0)
+        return;
 
-	if (frequency == 0 || duration_ms==0)
-		return;
+    SDL_AudioSpec desired_spec;
+    SDL_AudioSpec obtained_spec;
 
-	// TODO: find out how to do this
-} // end of tone
+    SDL_zero(desired_spec);
+    desired_spec.freq = 44100; // Sample rate
+    desired_spec.format = AUDIO_S16SYS; // 16-bit audio
+    desired_spec.channels = 1; // Mono
+    desired_spec.samples = 4096; // Buffer size
+    desired_spec.callback = audio_callback;
+
+    audio_device = SDL_OpenAudioDevice(NULL, 0, &desired_spec, &obtained_spec, 0);
+    if (audio_device == 0) {
+        SDL_Log("Failed to open audio: %s", SDL_GetError());
+        return;
+    }
+
+    audio_frequency = obtained_spec.freq / frequency;
+    audio_duration = duration_ms;
+    audio_start_time = SDL_GetTicks();
+
+    SDL_PauseAudioDevice(audio_device, 0); // Start audio playback
+}
 
 /* Stops tone generation
  */
 void TVout::noTone() {
-	// TODO: find out how to do this
-} // end of noTone
+    if (audio_device != 0) {
+        SDL_PauseAudioDevice(audio_device, 1); // Stop audio playback
+        SDL_CloseAudioDevice(audio_device);
+        audio_device = 0;
+    }
+}
